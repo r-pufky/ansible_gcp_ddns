@@ -1,0 +1,115 @@
+---
+# yamllint disable rule:line-length
+###############################################################################
+# Annotate User Configuration.
+###############################################################################
+# Use r_pufky.data.v3 data annotations to enforce consistency and validation
+# checks.
+#
+# Reference:
+# * https://docs.ansible.com/ansible/latest/dev_guide/developing_program_flow_modules.html#argument-spec
+# * https://github.com/ansible/ansible/issues/77159
+# yamllint enable rule:line-length
+
+- name: 'Annotate | sanitize & annotate service defaults'
+  ansible.builtin.set_fact:  # noqa jinja[spacing] readability.
+    _gcp_ddns_srv_version: "{{ {} | r_pufky.data.v3(
+        raw=gcp_ddns_srv_version,
+        default=gcp_ddns_role_validate_version,
+        _bin='/usr/local/bin/gcp_ddns',
+        _config=gcp_ddns_role_dir ~ '/dns.key',
+        _src=gcp_ddns_role_dir ~ '/' ~ gcp_ddns_srv_version,
+        _src_build=gcp_ddns_role_dir ~ '/' ~ gcp_ddns_srv_version ~ '/src/app',
+        _src_bin=gcp_ddns_role_dir ~ '/' ~ gcp_ddns_srv_version ~ '/gcp_ddns',
+        hint='str',
+        order=1
+        )
+      }}"
+    _gcp_ddns_srv_version_fatal_enable: "{{ {} | r_pufky.data.v3(
+        raw=gcp_ddns_srv_version_fatal_enable,
+        default=true,
+        hint='bool',
+        order=2
+        )
+      }}"
+    _gcp_ddns_srv_user: "{{ {} | r_pufky.data.v3(
+        raw=gcp_ddns_srv_user,
+        default='gcp_ddns',
+        _uid='',
+        hint='str',
+        order=4
+        )
+      }}"
+    _gcp_ddns_srv_group: "{{ {} | r_pufky.data.v3(
+        raw=gcp_ddns_srv_group,
+        default='gcp_ddns',
+        _gid='',
+        hint='str',
+        order=5
+        )
+      }}"
+    _gcp_ddns_srv_create_user: "{{ {} | r_pufky.data.v3(
+        raw=gcp_ddns_srv_create_user,
+        default=true,
+        hint='bool',
+        order=6
+        )
+      }}"
+
+- name: 'Annotate | sanitize & annotate config defaults'
+  ansible.builtin.set_fact:  # noqa jinja[spacing] readability.
+    _gcp_ddns_srv_keys: "{{ {} | r_pufky.data.v3(
+        raw=gcp_ddns_srv_keys,
+        default='',
+        hint='str',
+        added='1.5',
+        order=1
+        )
+      }}"
+    _gcp_ddns_cfg_mode: "{{ {} | r_pufky.data.v3(
+        raw=gcp_ddns_cfg_mode | lower,
+        default='service',
+        hint='str',
+        added='1.5',
+        order=2
+        )
+      }}"
+    _gcp_ddns_cfg_service_urls: "{{ {} | r_pufky.data.v3(
+        raw=gcp_ddns_cfg_service_urls,
+        default=([
+          'https://ipv4.icanhazip.com/',
+          'https://checkip.amazonaws.com/',
+          'https://ifconfig.me/ip',
+          'https://ipinfo.io/ip'
+        ]),
+        data=gcp_ddns_cfg_service_urls | join(' '),
+        hint='list of str',
+        added='1.5',
+        order=3
+        )
+      }}"
+    _gcp_ddns_cfg_interface_name: "{{ {} | r_pufky.data.v3(
+        raw=gcp_ddns_cfg_interface_name,
+        default='',
+        hint='str',
+        added='1.5',
+        order=4
+        )
+      }}"
+    _gcp_ddns_cfg_dns_names: "{{ {} | r_pufky.data.v3(
+        raw=gcp_ddns_cfg_dns_names,
+        default=[],
+        data=gcp_ddns_cfg_dns_names | join(' '),
+        hint='list of str',
+        added='1.5',
+        order=5
+        )
+      }}"
+    _gcp_ddns_cfg_google_project: "{{ {} | r_pufky.data.v3(
+        raw=gcp_ddns_cfg_google_project,
+        default='',
+        hint='str',
+        added='1.5',
+        order=6
+        )
+      }}"

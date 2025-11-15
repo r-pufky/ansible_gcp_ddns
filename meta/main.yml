@@ -1,0 +1,21 @@
+---
+galaxy_info:
+  role_name: 'gcp_ddns'
+  author: 'r_pufky'
+  description: 'GCP Dynamic DNS'
+  company: 'N/A'
+  license: 'AGPL-3.0 License'
+  min_ansible_version: '2.18.0'
+
+  platforms:
+    - name: 'Debian'
+      versions:
+        - 'trixie'
+
+  galaxy_tags:
+    - 'gcp'
+    - 'dns'
+    - 'dynamic'
+    - 'luontola'
+
+dependencies: []

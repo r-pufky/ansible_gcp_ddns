@@ -1,0 +1,88 @@
+---
+###############################################################################
+# GCP Application Credentials
+###############################################################################
+# Requires a Service Account with DNS Administrator role.
+#
+# 1. Create Service Account
+#    console.cloud.google.com:
+#    * IAM & admin ➔ Service accounts ➔ Create Service Account
+#      * Name: dns-updater
+#      * Service account ID: {GENERATE ID}
+#      * Description: Dynamic DNS updater.
+#      * Permissions: DNS Administrator
+#      * Principals with access: {SKIP}
+#
+# 2. Generate Keys
+#    console.cloud.google.com:
+#    * Service accounts ➔ Dynamic DNS Updater ➔ ⋮ ➔ Manage Keys ➔ Add key
+#      * Key type: JSON
+#
+# 3. ansible-vault encrypt service_account.json
+
+# GCP Service Account Credential keys (JSON).
+#
+# Sourced from ansible controller; automatically decrypted and placed in
+# /opt/gcp_dynamic_dns/dns.keys with correct permissions.
+#
+# gcp_ddns_srv_keys: 'host_vars/dynamic.example.com/data/config'
+#
+# Default: '' (disabled).
+gcp_ddns_srv_keys: ''
+
+# Mode to determine public IP address.
+#
+# IP is checked every 5 minutes.
+#
+# Values:
+#     service: 3rd party web service for external IP address. See
+#              gcp_ddns_cfg_service_urls.
+#   interface: OS for IP address assigned to network interface.
+#        upnp: UPnP queries router for external IP.
+#
+# Default: 'service'.
+gcp_ddns_cfg_mode: 'service'
+
+# Web addresses of services which report your public IP address.
+#
+# Multiple services used in a round-robin fashion. using more than once service
+# results in (5 * # of services) intervals for checks on any specific service.
+#
+# Default:
+#   - 'https://ipv4.icanhazip.com/'
+#   - 'https://checkip.amazonaws.com/'
+#   - 'https://ifconfig.me/ip'
+#   - 'https://ipinfo.io/ip'
+gcp_ddns_cfg_service_urls:
+  - 'https://ipv4.icanhazip.com/'
+  - 'https://checkip.amazonaws.com/'
+  - 'https://ifconfig.me/ip'
+  - 'https://ipinfo.io/ip'
+
+# Network interface to use. Default: '' (auto-detect interface).
+gcp_ddns_cfg_interface_name: ''
+
+# List of domain names to update.
+#
+# Requires gcp_ddns_cfg_google_project set.
+#
+# Special Case:
+# * FQDN are REQUIRED (ends in a period).
+# * A type DNS records must already exist on Cloud DNS.
+#
+# gcp_ddns_cfg_dns_names:
+#   - 'example.com.'
+#   - 'subdomain.example.com.'
+#   - 'example.org.'
+#
+# Default: []
+gcp_ddns_cfg_dns_names: []
+
+# GCP project name.
+#
+# Requires gcp_ddns_cfg_dns_names set.
+#
+# gcp_ddns_cfg_google_project: 'your-project-123456'
+#
+# Default: ''.
+gcp_ddns_cfg_google_project: ''

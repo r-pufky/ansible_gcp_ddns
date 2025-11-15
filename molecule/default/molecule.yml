@@ -1,0 +1,62 @@
+---
+###############################################################################
+# Default
+###############################################################################
+# Default configuration is deployed successfully.
+#
+# Tests:
+# * Binary deployed correctly.
+# * Mox service active and running for 'default' instance.
+# * Permissions propagated correctly for user data mounts.
+# * Permissions propagated correctly for root mounts.
+# * Mox service NOT active/running for 'no_config' instance.
+
+dependency:
+  name: 'galaxy'
+driver:
+  name: 'podman'
+provisioner:
+  name: 'ansible'
+  config_options:
+    defaults:
+      interpreter_python: 'auto_silent'
+      callback_whitelist: 'profile_tasks, timer, yaml'
+    ssh_connection:
+      pipelining: false
+  inventory:
+    host_vars:
+      gcp_ddns-debian-13-default:
+        gcp_ddns_testing_enable: true
+        gcp_ddns_cfg_dns_names:
+          - 'example.com.'
+          - 'subdomain.example.com.'
+        gcp_ddns_cfg_google_project: 'example-project-123456789'
+        gcp_ddns_srv_keys: '{{
+            lookup("env", "MOLECULE_PROJECT_DIRECTORY") ~
+            "/molecule/files/test.json"
+          }}'
+platforms:
+  - name: 'gcp_ddns-debian-13-default'
+    image: 'ghcr.io/hifis-net/debian-systemd:13'
+    systemd: 'always'
+    volumes:
+      - '/sys/fs/cgroup:/sys/fs/cgroup:ro'
+    capabilities:
+      - 'SYS_ADMIN'  # Required for systemd service.
+    command: '/lib/systemd/systemd'
+    pre_build_image: true
+verifier:
+  name: 'ansible'
+lint: |
+  set -e
+  yamllint .
+  ansible-lint .
+scenario:
+  test_sequence:
+    - 'destroy'
+    - 'syntax'
+    - 'create'
+    - 'prepare'
+    - 'converge'
+    - 'verify'
+    - 'destroy'

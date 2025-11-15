@@ -1,0 +1,71 @@
+---
+###############################################################################
+# Default GCP Dynamic DNS Package Dependencies
+###############################################################################
+# Default required packages for GCP Dynamic DNS install.
+#
+# Updates:
+# * New MAJOR, MINOR releases should hard branch at version before starting
+#   (e.g. 2.14.x branch).
+# * Keep a separate change log as changes are made, you will not remember all
+#   of them.
+# * Use bare-metal docs to validate package/process changes.
+# * Update role defaults (includes updating defaults, tasks):
+#   * Use configuration docs to add new variables.
+#   * Use defaults/ to remove any changed/deprecated variables.
+# * Update tests for any changes.
+# * Standard role validation testing (yamllint, ansible-lint, todo, noqa).
+# * Tag with OS-APP-ROLE version.
+#
+# Reference:
+# * https://github.com/luontola/gcp-dynamic-dns
+
+# Last time Mox options were validated against default configuration.
+gcp_ddns_role_validate_date: '2025-11-15'
+gcp_ddns_role_validate_release: 'trixie'
+gcp_ddns_role_validate_version: 'v1.5'
+
+gcp_ddns_role_dir: '/opt/gcp_ddns'
+
+###############################################################################
+# APT Packages
+###############################################################################
+
+gcp_ddns_role_packages:
+  - 'git'
+  - 'ca-certificates'
+  - 'golang'
+
+###############################################################################
+# GitHub Options
+###############################################################################
+# GCP Dynamic DNS releases source. Not available on pkg.go.dev. Sync repository
+# and manually build .
+#
+# Reference:
+# * https://github.com/luontola/gcp-dynamic-dns/releases
+
+gcp_ddns_role_repo: 'https://github.com/luontola/gcp-dynamic-dns'
+gcp_ddns_role_git_gpg_signing_keys: ['56DE80547DD40CB6']
+
+###############################################################################
+# Default Mox User/Group
+###############################################################################
+
+gcp_ddns_role_group:
+  name: 'gcp_ddns'
+  gid: 555
+
+gcp_ddns_role_user:
+  name: 'gcp_ddns'
+  group: 'gcp_ddns'
+  uid: 555
+  shell: '/usr/sbin/nologin'
+  home: '{{ gcp_ddns_role_dir }}'
+  comment: 'GCP Dynamic DNS,,,'
+  create_home: true
+  password: '!'
+  password_lock: true
+  update_password: 'always'
+  expires: -1
+  system: true

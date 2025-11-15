@@ -1,0 +1,34 @@
+---
+###############################################################################
+# Verify
+###############################################################################
+
+- name: 'Verify'
+  hosts: 'all'
+  gather_facts: false
+  tasks:
+    - name: 'Verify | /usr/local/bin/gcp_ddns'
+      ansible.builtin.include_role:
+        name: 'r_pufky.lib.tests'
+        tasks_from: 'file.yml'
+      vars:
+        test_name: 'Verify | /usr/local/bin/gcp_ddns'
+        test_file: '/usr/local/bin/gcp_ddns'
+        test_owner: 'root'
+        test_group: 'root'
+        test_mode: '0755'
+        test_state: 'file'
+        test_diff: true
+
+    - name: 'Verify | /opt/gcp_ddns/dns.key'
+      ansible.builtin.include_role:
+        name: 'r_pufky.lib.tests'
+        tasks_from: 'file.yml'
+      vars:
+        test_name: 'Verify | /opt/gcp_ddns/dns.key'
+        test_file: '/opt/gcp_ddns/dns.key'
+        test_owner: 'gcp_ddns'
+        test_group: 'gcp_ddns'
+        test_mode: '0640'
+        test_state: 'file'
+        test_diff: true

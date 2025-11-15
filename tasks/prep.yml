@@ -1,0 +1,48 @@
+---
+###############################################################################
+# Prep
+###############################################################################
+# Create user if needed and determine UID/GID for potential remote filesystems.
+#
+# Special Case:
+# * mox.conf (static) changes MUST restart mox service to apply changes.
+# * domains.conf (dynamic) automatically reloaded on file change - errors abort
+#   reload and previous version remains active.
+#
+# Reference:
+# * https://www.xmox.nl/config/
+
+- name: 'Prep | manage users'
+  when: _gcp_ddns_srv_create_user.raw
+  ansible.builtin.include_role:
+    name: 'r_pufky.deb.users'
+    tasks_from: 'role_account_add.yml'
+  vars:
+    users_role_user: '{{ gcp_ddns_role_user }}'
+    users_role_group: '{{ gcp_ddns_role_group }}'
+
+- name: 'Prep | enumerate system user {{ _gcp_ddns_srv_user.raw }}'
+  ansible.builtin.user:
+    name: '{{ _gcp_ddns_srv_user.raw }}'
+  check_mode: true
+  changed_when: false
+  register: _gcp_ddns_srv_user_query
+
+- name: 'Prep | parse system user UID/GID'
+  ansible.builtin.set_fact:
+    _gcp_ddns_srv_user: '{{
+        _gcp_ddns_srv_user |
+        combine({"_uid": _gcp_ddns_srv_user_query.uid})
+      }}'
+    _gcp_ddns_srv_group: '{{
+        _gcp_ddns_srv_group |
+        combine({"_gid": _gcp_ddns_srv_user_query.group})
+      }}'
+
+- name: 'Prep | manage install directory'
+  ansible.builtin.file:
+    path: '{{ _gcp_ddns_srv_version._src | dirname }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+    state: 'directory'

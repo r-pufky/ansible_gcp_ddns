@@ -1,0 +1,67 @@
+---
+# yamllint disable rule:line-length
+###############################################################################
+# Assert Settings
+###############################################################################
+# Sanity check options to stop preventable errors and accidental data deletion.
+
+- name: 'Assert | fatal version mis-match'
+  when: >
+    gcp_ddns_srv_version_fatal_enable and
+    gcp_ddns_srv_version != gcp_ddns_role_validate_version
+  ansible.builtin.fail:
+    msg: |
+      ╭───────────────────────────────────────────────────────────────────╮
+      │                                                                   │
+      │                     Fatal version mis-match.                      │
+      │                                                                   │
+      ├───────────────────────────────────────────────────────────────────╯
+      │ Requested version does not match role supported version.
+      │
+      │ Reference:
+      │ * https://github.com/luontola/gcp-dynamic-dns/releases
+      │
+      │ gcp_ddns_srv_version: {{ gcp_ddns_srv_version }}
+      │ Supported version: {{ gcp_ddns_role_validate_version }}
+      │ gcp_ddns_srv_version_fatal_enable: {{ gcp_ddns_srv_version_fatal_enable }}
+
+- name: 'Assert | IP service list'
+  when: gcp_ddns_cfg_mode | lower == 'service'
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - gcp_ddns_cfg_service_urls | length > 0
+    fail_msg: |
+      ╭───────────────────────────────────────────────────────────────────╮
+      │                                                                   │
+      │          Must define service URLs when using 'service'.           │
+      │                                                                   │
+      ├───────────────────────────────────────────────────────────────────╯
+      │ gcp_ddns_cfg_mode: {{ gcp_ddns_cfg_mode }}
+      │ gcp_ddns_cfg_service_urls: {{ gcp_ddns_cfg_service_urls }}
+
+- name: 'Assert | DNS names defined'
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - gcp_ddns_cfg_dns_names | length > 0
+    fail_msg: |
+      ╭───────────────────────────────────────────────────────────────────╮
+      │                                                                   │
+      │               DNS names to update must be defined.                │
+      │                                                                   │
+      ├───────────────────────────────────────────────────────────────────╯
+      │ gcp_ddns_cfg_dns_names: {{ gcp_ddns_cfg_dns_names }}
+
+- name: 'Assert | GCP project name set'
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - gcp_ddns_cfg_google_project | length > 0
+    fail_msg: |
+      ╭───────────────────────────────────────────────────────────────────╮
+      │                                                                   │
+      │                   GCP project name must be set.                   │
+      │                                                                   │
+      ├───────────────────────────────────────────────────────────────────╯
+      │ gcp_ddns_cfg_google_project: {{ gcp_ddns_cfg_google_project }}

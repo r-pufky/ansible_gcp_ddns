@@ -1,0 +1,65 @@
+---
+###############################################################################
+# Install Packages & Services
+###############################################################################
+# Install packages and compile GCP Dynamic DNS.
+#
+# Reference:
+# * https://github.com/luontola/gcp-dynamic-dns
+
+- name: 'Install | packages'
+  ansible.builtin.include_role:
+    name: 'r_pufky.deb.apt'
+  vars:
+    apt_packages:
+      - '{{ gcp_ddns_role_packages }}'
+    apt_package_update_cache: true
+
+- name: 'Install | query binary'
+  ansible.builtin.stat:
+    path: '{{ _gcp_ddns_srv_version._src }}'
+  register: _gcp_ddns_install
+
+- name: 'Install | build 🗘'
+  when: not _gcp_ddns_install.stat.exists
+  ansible.builtin.debug:
+    msg: |
+      ╭───────────────────────────────────────────────────────────────────╮
+      │                                                                   │
+      │   Building GCP DDNS from source. This will take a few minutes.    │
+      │                                                                   │
+      ╰───────────────────────────────────────────────────────────────────╯
+
+- name: 'Install | clone gcp-dynamic-dns'
+  when: not _gcp_ddns_install.stat.exists
+  ansible.builtin.git:
+    repo: '{{ gcp_ddns_role_repo }}'
+    version: '{{ _gcp_ddns_srv_version.raw }}'
+    dest: '{{ _gcp_ddns_srv_version._src }}'
+    gpg_allowlist: '{{ gcp_ddns_role_git_gpg_signing_keys }}'
+    verify_commit: false
+    clone: true
+  register: _gcp_ddns_download
+  until: _gcp_ddns_download is succeeded
+  retries: 3
+  delay: 2
+
+- name: 'Install | build {{ _gcp_ddns_srv_version.raw }}'
+  when: not _gcp_ddns_install.stat.exists
+  ansible.builtin.shell: >-
+    go build -o '{{ _gcp_ddns_srv_version._src_bin }}'
+  args:
+    executable: '/bin/bash'
+    chdir: '{{ _gcp_ddns_srv_version._src_build }}'
+  changed_when: _gcp_ddns_build.rc == 0
+  register: _gcp_ddns_build
+
+- name: 'Install | link binary'
+  when: not _gcp_ddns_install.stat.exists
+  ansible.builtin.file:
+    path: '{{ _gcp_ddns_srv_version._bin }}'
+    src: '{{ _gcp_ddns_srv_version._src_bin }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+    state: 'hard'

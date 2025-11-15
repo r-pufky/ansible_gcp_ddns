@@ -1,0 +1,56 @@
+---
+###############################################################################
+# GCP Dynamic DNS Service Configuration
+###############################################################################
+# Install size: ~132MB
+#     golang: ~112MB.
+#   gcp_ddns: ~20MB.
+
+# GCP Dynamic DNS Release.
+#
+# Versions (Schematic):
+#       MAJOR: Safe - Usually requires no role updates.
+#       MINOR: Safe - Usually requires no role updates.
+#       PATCH: Safe - Usually requires no role updates.
+#   RECOMMEND: Always check release notes when upgrading versions - most
+#              version changes require manual migration of data store. Never
+#              use 'latest'.
+#
+# Values:
+#   {VERSION}: Tagged release to use ('v1.5').
+#      latest: Use latest stable release.
+#
+# Default: 'v1.5'.
+#
+# Reference:
+# * https://github.com/luontola/gcp-dynamic-dns/releases
+gcp_ddns_srv_version: 'v1.5'
+
+# Halt role if specified version != role version? Default: True.
+gcp_ddns_srv_version_fatal_enable: true
+
+
+###############################################################################
+# Mox User
+###############################################################################
+
+# User that Mox will run under.
+#
+# Enable gcp_ddns_srv_create_user if account is not externally managed.
+#
+# Default: 'gcp_ddns'.
+gcp_ddns_srv_user: 'gcp_ddns'
+
+# Group that Mox will run under.
+#
+# Enable gcp_ddns_srv_create_user if group is not externally managed.
+#
+# Default: 'gcp_ddns'.
+gcp_ddns_srv_group: 'gcp_ddns'
+
+# Create gcp_ddns_srv_user, gcp_ddns_srv_group if not detected?
+#
+# Applied via r_pufky.deb.users, see vars/main.yml for default user attributes.
+#
+# Default: True.
+gcp_ddns_srv_create_user: true

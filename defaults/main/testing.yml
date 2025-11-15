@@ -1,0 +1,15 @@
+---
+###############################################################################
+# GCP Dynamic DNS Testing
+###############################################################################
+# Options exposed specifically for unit testing dependent roles without
+# hammering GCP API's. These are not needed in normal operation.
+
+# Enable testing.
+#
+# This will disable validation step in role application to prevent API use.
+#
+# molecule test -s live_api_test -- -v  -e '{"gcp_ddns_testing_enable": true}'
+#
+# Default: False.
+gcp_ddns_testing_enable: false

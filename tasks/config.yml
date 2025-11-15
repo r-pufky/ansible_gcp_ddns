@@ -1,0 +1,58 @@
+---
+###############################################################################
+# Configure Services
+###############################################################################
+
+- name: 'Config | set GCP service account keys'
+  ansible.builtin.copy:
+    src: '{{ _gcp_ddns_srv_keys.raw }}'
+    dest: '{{ _gcp_ddns_srv_version._config }}'
+    mode: '0640'
+    directory_mode: '0755'
+    owner: '{{ _gcp_ddns_srv_user._uid }}'
+    group: '{{ _gcp_ddns_srv_group._gid }}'
+
+- name: 'Config | set service definitions'
+  ansible.builtin.include_role:
+    name: 'r_pufky.deb.systemd'
+  vars:
+    systemd_daemon_reload_enable: true
+    systemd_services:
+      - name: 'gcp_ddns'
+        state: 'present'
+        drop_in: false
+        unit:
+          description: 'GCP Dynamic DNS'
+          after:
+            - 'network-online.target'
+          wants:
+            - 'network-online.target'
+        service:
+          type: 'simple'
+          exec_start:
+            - '{{ _gcp_ddns_srv_version._bin ~ " sync" }}'
+          restart_sec: '5s'
+          restart: 'always'
+        exec:
+          user: '{{ _gcp_ddns_srv_user.raw }}'
+          group: '{{ _gcp_ddns_srv_group.raw }}'
+          working_directory: '{{ gcp_ddns_role_dir }}'
+          environment:
+            - var: 'MODE'
+              value: '{{ _gcp_ddns_cfg_mode.raw }}'
+            - var: 'SERVICE_URLS'
+              value: '{{ _gcp_ddns_cfg_service_urls.data }}'
+            - var: 'INTERFACE_NAME'
+              value: '{{ _gcp_ddns_cfg_interface_name.raw }}'
+            - var: 'DNS_NAMES'
+              value: '{{ _gcp_ddns_cfg_dns_names.data }}'
+            - var: 'GOOGLE_PROJECT'
+              value: '{{ _gcp_ddns_cfg_google_project.raw }}'
+            - var: 'GOOGLE_APPLICATION_CREDENTIALS'
+              value: '{{ _gcp_ddns_srv_version._config }}'
+          u_mask: '007'
+          private_tmp: true
+          protect_system: 'strict'
+        install:
+          wanted_by:
+            - 'multi-user.target'
