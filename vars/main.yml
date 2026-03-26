@@ -1,37 +1,31 @@
 ---
 ###############################################################################
-# Default GCP Dynamic DNS Package Dependencies
+# Default GCP Dynamic DNS Options
 ###############################################################################
 # Default required packages for GCP Dynamic DNS install.
 #
 # Updates:
-# * New MAJOR, MINOR releases should hard branch at version before starting
-#   (e.g. 2.14.x branch).
-# * Keep a separate change log as changes are made, you will not remember all
-#   of them.
+# * KEEP a separate change log as changes are made.
 # * Use bare-metal docs to validate package/process changes.
-# * Update role defaults (includes updating defaults, tasks):
-#   * Use configuration docs to add new variables.
-#   * Use defaults/ to remove any changed/deprecated variables.
+# * Update defaults.
 # * Update tests for any changes.
-# * Standard role validation testing (yamllint, ansible-lint, to-do, no-qa).
-# * Tag with OS-APP-ROLE version.
+# * Standard validation testing (yamllint, ansible-lint, to-do, no-qa).
 #
 # Reference:
 # * https://github.com/luontola/gcp-dynamic-dns
 
-# Last time Mox options were validated against default configuration.
-gcp_ddns_role_validate_date: '2025-11-15'
-gcp_ddns_role_validate_release: 'trixie'
-gcp_ddns_role_validate_version: 'v1.5'
+gcp_ddns___release: "{{ {} | r_pufky.data.v3(
 
-gcp_ddns_role_dir: '/opt/gcp_ddns'
+    _date='2026-03-26',
+    _debian='trixie',
+    _app='v1.5',
+  ) }}"
 
 ###############################################################################
 # APT Packages
 ###############################################################################
 
-gcp_ddns_role_packages:
+gcp_ddns___packages:
   - 'git'
   - 'ca-certificates'
   - 'golang'
@@ -40,28 +34,38 @@ gcp_ddns_role_packages:
 # GitHub Options
 ###############################################################################
 # GCP Dynamic DNS releases source. Not available on pkg.go.dev. Sync repository
-# and manually build .
+# and manually build. Validate with GPG signing key via git clone.
 #
 # Reference:
 # * https://github.com/luontola/gcp-dynamic-dns/releases
 
-gcp_ddns_role_repo: 'https://github.com/luontola/gcp-dynamic-dns'
-gcp_ddns_role_git_gpg_signing_keys: ['56DE80547DD40CB6']
+gcp_ddns___app: "{{ {} | r_pufky.data.v3(
+
+    _version=gcp_ddns___release._app,
+    _bin='/usr/local/bin/gcp_ddns',
+    _opt_dir='/opt/gcp_ddns',
+    _src_dir='/opt/gcp_ddns/src',
+    _var_dir='/var/opt/gcp_ddns',
+    _dns_key='/var/opt/gcp_ddns/dns.key',
+    _repo_url='https://github.com/luontola/gcp-dynamic-dns',
+    _gpg_keys=['56DE80547DD40CB6'],
+    _service='/etc/systemd/system/gcp_ddns.service',
+  ) }}"
 
 ###############################################################################
 # Default Mox User/Group
 ###############################################################################
 
-gcp_ddns_role_group:
+gcp_ddns___group:
   name: 'gcp_ddns'
   gid: 555
 
-gcp_ddns_role_user:
+gcp_ddns___user:
   name: 'gcp_ddns'
   group: 'gcp_ddns'
   uid: 555
   shell: '/usr/sbin/nologin'
-  home: '{{ gcp_ddns_role_dir }}'
+  home: '/opt/gcp_ddns'
   comment: 'GCP Dynamic DNS,,,'
   create_home: true
   password: '!'

@@ -1,0 +1,18 @@
+---
+###############################################################################
+# Maintenance
+###############################################################################
+# Prune any old files from previous role versions. This is executed before any
+# operations with the new role version.
+#
+# Use shell command to increase execution speed for multiple directories.
+
+# * gcp_ddns moved to /opt/gcp_ddns/src.
+# * dns.key moved to /var/opt/gcp_ddns/dns.key
+- name: 'Maintenance | 1.0.0 | remove old versions'
+  ansible.builtin.shell: >-
+    rm -rf /opt/gcp_ddns/gcp_ddns* &&
+    rm -f /opt/gcp_ddns/dns.key
+  args:
+    executable: '/bin/bash'
+    removes: '/opt/gcp_ddns/dns.key'

@@ -7,26 +7,32 @@
   hosts: 'all'
   gather_facts: false
   tasks:
-    - name: 'Verify | /usr/local/bin/gcp_ddns'
+    - name: 'Prepare | import role variables'
+      ansible.builtin.include_vars:
+        file: '{{
+            lookup("env", "MOLECULE_PROJECT_DIRECTORY") ~ "/vars/main.yml"
+          }}'
+
+    - name: '{{ "Verify | test | " ~ gcp_ddns___app._bin }}'
       ansible.builtin.include_role:
-        name: 'r_pufky.lib.tests'
+        name: 'r_pufky.data.test'
         tasks_from: 'file.yml'
       vars:
-        test_name: 'Verify | /usr/local/bin/gcp_ddns'
-        test_file: '/usr/local/bin/gcp_ddns'
+        test_name: '{{ "Verify | test | " ~ gcp_ddns___app._bin }}'
+        test_file: '{{ gcp_ddns___app._bin }}'
         test_owner: 'root'
         test_group: 'root'
         test_mode: '0755'
         test_state: 'file'
         test_diff: true
 
-    - name: 'Verify | /opt/gcp_ddns/dns.key'
+    - name: '{{ "Verify | test | " ~ gcp_ddns___app._dns_key }}'
       ansible.builtin.include_role:
-        name: 'r_pufky.lib.tests'
+        name: 'r_pufky.data.test'
         tasks_from: 'file.yml'
       vars:
-        test_name: 'Verify | /opt/gcp_ddns/dns.key'
-        test_file: '/opt/gcp_ddns/dns.key'
+        test_name: '{{ "Verify | test | " ~ gcp_ddns___app._dns_key }}'
+        test_file: '{{ gcp_ddns___app._dns_key }}'
         test_owner: 'gcp_ddns'
         test_group: 'gcp_ddns'
         test_mode: '0640'

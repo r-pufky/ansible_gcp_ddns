@@ -1,9 +1,18 @@
-# GCP Dynamic DNS
-GCP Dynamic DNS updater from https://github.com/luontola/gcp-dynamic-dns.
+# [GCP Dynamic DNS][h]
+GCP Dynamic DNS updater from source.
 
-## Requirements
-[supported platforms](https://github.com/r-pufky/ansible_gcp_ddns/blob/main/meta/main.yml)
+## [Requirements][i]
+Requires [r_pufky.srv][g] galaxy-ng collection. See
+[reference documentation][h] for troubleshooting and config variables.
 
+Install size: ~132MB
+
+## Role Variables
+Detailed variable use documented in defaults. See usage for role operation.
+
+* [defaults][j] - User configurable options.
+
+## Usage
 Requires a Service Account with DNS Administrator role.
 
 1. Create Service Account (console.cloud.google.com):
@@ -20,60 +29,45 @@ Requires a Service Account with DNS Administrator role.
 
 3. ansible-vault encrypt service_account.json
 
-## Role Variables
-[defaults](https://github.com/r-pufky/ansible_gcp_ddns/tree/main/defaults/main)
+### Feature Flags
+Tasks are gated by feature flags and executed in the following order.
 
-### Ports
-No additional ports required.
+  Step | Flag                     | Notes
+ ------|--------------------------|-------
+  1    | gcp_ddns_flg_maintenance | Preform role maintenance tasks.
+  2    | gcp_ddns_flg_install     | Install required packages, users, etc.
+  3    | gcp_ddns_flg_config      | Install user-defined config.
 
-## Dependencies
-**galaxy-ng** roles cannot be used independently. Part of
-[r_pufky.srv](https://github.com/r-pufky/ansible_collection_srv) collection.
+### Example Playbooks
 
-## Example Playbook
-Read defaults documentation.
-
-### Pre-configured deployment
-Service will automatically be restarted when configuration is defined.
+#### Pre-configured deployment
 
 ``` yaml
-- name: 'GCP DDNS updater'
-  hosts: 'ddns.example.com'
-  become: true
-  roles:
-     - 'r_pufky.srv.gcp_ddns'
+- name: 'Deploy GCP DDNS.'
+  ansible.builtin.include_role:
+    name: 'r_pufky.srv.gcp_ddns'
   vars:
+    gcp_ddns_srv_keys: 'host_Vars/ddns.example.com/data/service_account.json'
     gcp_ddns_cfg_dns_names:
       - 'example.com.'
       - 'subdomain.example.com.'
     gcp_ddns_cfg_google_project: 'example-project-123456789'
-    gcp_ddns_srv_keys: 'host_vars/ddns.example.com/service_account_keys.json'
 ```
 
 ## Development
-Configure [environment](https://r-pufky.github.io/ansible_collection_docs/ansible/environment)
+Configure [environment][a].
 
-Run all unit tests:
 ``` bash
+# Run all tests.
 molecule test --all
 ```
 
-### Releases
-Release format: **{OS}-{SERVICE}-{ROLE}**
+### [Releases][b]
 
-Each type inherits the versioning system used; defaulting to schematic
-versioning.
-
-`12.0.0-2.0.3-1.0.0`
-
-* 12.0.0 - Debian 12 (bookworm).
-* 2.0.3 - Service/app version.
-* 1.0.0 - Role version.
-
-Releases are branched on Debian releases:
-
-* **[13.x.x](https://github.com/r-pufky/ansible_gcp_ddns)**: 13 Trixie.
-* **[12.x.x](https://github.com/r-pufky/ansible_gcp_ddns/tree/12.x)**: 12 Bookworm.
+  Release | Debian | Ansible | GCP DDNS | Notes
+ ---------|--------|---------|----------|-------
+  1.x.x   | 13     | 2.20    | v1.5     | Ansible 2.20, feature flags, and semantic versioning.
+  0.x.x   | 13     | 2.18    | v1.5     | Initial release.
 
 ## Issues
 Create a bug and provide as much information as possible.
@@ -81,9 +75,20 @@ Create a bug and provide as much information as possible.
 Associate pull requests with a submitted bug.
 
 ## License
-[AGPL-3.0 License](https://www.tldrlegal.com/license/gnu-affero-general-public-license-v3-agpl-3-0)
- [(direct link)](https://github.com/r-pufky/ansible_gcp_ddns/blob/main/LICENSE)
+[AGPL-3.0 License][c] | [direct link][f]
 
 ## Author Information
-PGP Fingerprint: [466EEC2B67516C7117C85CE3A0BC35D16698BAB9](https://keys.openpgp.org/vks/v1/by-fingerprint/466EEC2B67516C7117C85CE3A0BC35D16698BAB9)
-| [github gist](https://gist.github.com/r-pufky/a8df36977c55b5bb20829267c4c49d22)
+PGP: [466EEC2B67516C7117C85CE3A0BC35D16698BAB9][d] | [github gist][e]
+
+
+[a]: https://r-pufky.github.io/ansible_docs
+[b]: https://semver.org/spec/v2.0.0
+[c]: https://www.tldrlegal.com/license/gnu-affero-general-public-license-v3-agpl-3-0
+[d]: https://keys.openpgp.org/vks/v1/by-fingerprint/466EEC2B67516C7117C85CE3A0BC35D16698BAB9
+[e]: https://gist.github.com/r-pufky/a8df36977c55b5bb20829267c4c49d22
+
+[f]: https://github.com/r-pufky/ansible_gcp_ddns/blob/main/LICENSE
+[g]: https://github.com/r-pufky/ansible_collection_srv
+[h]: https://github.com/luontola/gcp-dynamic-dns
+[i]: https://github.com/r-pufky/ansible_gcp_ddns/blob/main/meta/main.yml
+[j]: https://github.com/r-pufky/ansible_gcp_ddns/tree/main/defaults/main/main.yml

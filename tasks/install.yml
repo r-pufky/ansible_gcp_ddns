@@ -2,63 +2,73 @@
 ###############################################################################
 # Install Packages & Services
 ###############################################################################
-# Install packages and compile GCP Dynamic DNS.
+# Install packages and compile GCP Dynamic DNS. Use custom service according
+# to Linux FHS standards:
+#
+# Type    | Perms               | Path
+# --------|---------------------|-------
+# Runtime | 0750/0640 SRV:SRV   | /var/opt/gcp_ddns
 #
 # Reference:
 # * https://github.com/luontola/gcp-dynamic-dns
+
+- name: 'Install | filesystem | set system directories'
+  ansible.builtin.file:
+    path: '{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+    state: 'directory'
+  loop:
+    - '{{ gcp_ddns___app._src_dir }}'  # src_dir includes opt_dir.
+    - '{{ gcp_ddns___app._var_dir }}'
 
 - name: 'Install | packages'
   ansible.builtin.include_role:
     name: 'r_pufky.deb.apt'
   vars:
     apt_packages:
-      - '{{ gcp_ddns_role_packages }}'
-    apt_package_update_cache: true
+      - '{{ gcp_ddns___packages }}'
+    apt_srv_package_update_cache: true
 
-- name: 'Install | query binary'
+- name: 'Install | filesystem | query binary'
   ansible.builtin.stat:
-    path: '{{ _gcp_ddns_srv_version._src }}'
-  register: _gcp_ddns_install
+    path: '{{ gcp_ddns__cfg._app }}'
+  register: gcp_ddns__install
 
-- name: 'Install | build 🗘'
-  when: not _gcp_ddns_install.stat.exists
+- name: 'Install | build | 🗘 GCP DDNS (~1 minute) 🗘'
+  when: not gcp_ddns__install.stat.exists
   ansible.builtin.debug:
-    msg: |
-      ╭───────────────────────────────────────────────────────────────────╮
-      │                                                                   │
-      │   Building GCP DDNS from source. This will take a few minutes.    │
-      │                                                                   │
-      ╰───────────────────────────────────────────────────────────────────╯
+    msg: 'Clone and build GCP DDNS (~1 minute).'
 
-- name: 'Install | clone gcp-dynamic-dns'
-  when: not _gcp_ddns_install.stat.exists
+- name: 'Install | git | clone gcp-dynamic-dns'
+  when: not gcp_ddns__install.stat.exists
   ansible.builtin.git:
-    repo: '{{ gcp_ddns_role_repo }}'
-    version: '{{ _gcp_ddns_srv_version.raw }}'
-    dest: '{{ _gcp_ddns_srv_version._src }}'
-    gpg_allowlist: '{{ gcp_ddns_role_git_gpg_signing_keys }}'
+    repo: '{{ gcp_ddns__cfg._repo_url }}'
+    version: '{{ gcp_ddns__cfg._version }}'
+    dest: '{{ gcp_ddns__cfg._app }}'
+    gpg_allowlist: '{{ gcp_ddns__cfg._gpg_keys }}'
     verify_commit: false
     clone: true
-  register: _gcp_ddns_download
-  until: _gcp_ddns_download is succeeded
+  register: gcp_ddns__download
+  until: gcp_ddns__download is succeeded
   retries: 3
   delay: 2
 
-- name: 'Install | build {{ _gcp_ddns_srv_version.raw }}'
-  when: not _gcp_ddns_install.stat.exists
-  ansible.builtin.shell: >-
-    go build -o '{{ _gcp_ddns_srv_version._src_bin }}'
+- name: '{{ "Install | build | GCP DDNS " ~ gcp_ddns__cfg._version }}'
+  when: not gcp_ddns__install.stat.exists
+  ansible.builtin.shell: '{{ "go build -o " ~ gcp_ddns__cfg._src_bin }}'
   args:
     executable: '/bin/bash'
-    chdir: '{{ _gcp_ddns_srv_version._src_build }}'
-  changed_when: _gcp_ddns_build.rc == 0
-  register: _gcp_ddns_build
+    chdir: '{{ gcp_ddns__cfg._src_build }}'
+  changed_when: gcp_ddns__build.rc == 0
+  register: gcp_ddns__build
 
-- name: 'Install | link binary'
-  when: not _gcp_ddns_install.stat.exists
+- name: 'Install | filesystem | link binary'
+  when: not gcp_ddns__install.stat.exists
   ansible.builtin.file:
-    path: '{{ _gcp_ddns_srv_version._bin }}'
-    src: '{{ _gcp_ddns_srv_version._src_bin }}'
+    path: '{{ gcp_ddns__cfg._bin }}'
+    src: '{{ gcp_ddns__cfg._src_bin }}'
     owner: 'root'
     group: 'root'
     mode: '0755'

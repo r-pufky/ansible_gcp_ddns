@@ -6,10 +6,7 @@
 #
 # Tests:
 # * Binary deployed correctly.
-# * Mox service active and running for 'default' instance.
-# * Permissions propagated correctly for user data mounts.
-# * Permissions propagated correctly for root mounts.
-# * Mox service NOT active/running for 'no_config' instance.
+# * DNS keys are correct.
 
 dependency:
   name: 'galaxy'
@@ -24,9 +21,9 @@ provisioner:
     ssh_connection:
       pipelining: false
   inventory:
-    host_vars:
-      gcp_ddns-debian-13-default:
-        gcp_ddns_testing_enable: true
+    group_vars:
+      all:
+        testing_enable: true
         gcp_ddns_cfg_dns_names:
           - 'example.com.'
           - 'subdomain.example.com.'
@@ -36,7 +33,7 @@ provisioner:
             "/molecule/files/test.json"
           }}'
 platforms:
-  - name: 'gcp_ddns-debian-13-default'
+  - name: 'gcp-ddns-default'
     image: 'ghcr.io/hifis-net/debian-systemd:13'
     systemd: 'always'
     volumes:
@@ -45,12 +42,9 @@ platforms:
       - 'SYS_ADMIN'  # Required for systemd service.
     command: '/lib/systemd/systemd'
     pre_build_image: true
+
 verifier:
   name: 'ansible'
-lint: |
-  set -e
-  yamllint .
-  ansible-lint .
 scenario:
   test_sequence:
     - 'destroy'

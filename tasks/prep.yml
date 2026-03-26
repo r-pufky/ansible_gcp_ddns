@@ -1,48 +1,124 @@
 ---
 ###############################################################################
-# Prep
+#  Pre Execution Tasks
 ###############################################################################
-# Create user if needed and determine UID/GID for potential remote filesystems.
+# Only use data annotations in role after merging role, defaults, runtime data.
+# Service may not exist if first install.
 #
-# Special Case:
-# * mox.conf (static) changes MUST restart mox service to apply changes.
-# * domains.conf (dynamic) automatically reloaded on file change - errors abort
-#   reload and previous version remains active.
-#
-# Reference:
-# * https://www.xmox.nl/config/
+# *arr services use the same codebase; any bugs or fixes should be checked for
+# all related services.
 
-- name: 'Prep | manage users'
-  when: _gcp_ddns_srv_create_user.raw
-  ansible.builtin.include_role:
-    name: 'r_pufky.deb.users'
-    tasks_from: 'role_account_add.yml'
-  vars:
-    users_role_user: '{{ gcp_ddns_role_user }}'
-    users_role_group: '{{ gcp_ddns_role_group }}'
+#         _config=gcp_ddns___dir ~ '/dns.key',
+#         _src=gcp_ddns___dir ~ '/' ~ gcp_ddns_srv_version,
+#         _src_build=gcp_ddns___dir ~ '/' ~ gcp_ddns_srv_version ~ '/src/app',
+#         _src_bin=gcp_ddns___dir ~ '/' ~ gcp_ddns_srv_version ~ '/gcp_ddns',
 
-- name: 'Prep | enumerate system user {{ _gcp_ddns_srv_user.raw }}'
+- name: 'Prep | fact | record start time'
+  ansible.builtin.set_fact:
+    gcp_ddns__srv: "{{ gcp_ddns___release | r_pufky.data.v3(
+
+        _start=now(utc=True, fmt='%Y-%m-%dT%H%M%S'),
+        _user=gcp_ddns_srv_user,
+        _group=gcp_ddns_srv_group,
+        _keys=gcp_ddns_srv_keys,
+      ) }}"
+    gcp_ddns__cfg: "{{ gcp_ddns___app | r_pufky.data.v3(
+
+        _version=gcp_ddns_srv_version,
+        _mode=gcp_ddns_cfg_mode | lower,
+        _service_urls=gcp_ddns_cfg_service_urls | join(' '),
+        _interface_name=gcp_ddns_cfg_interface_name,
+        _dns_names=gcp_ddns_cfg_dns_names | join(' '),
+        _google_project=gcp_ddns_cfg_google_project,
+        _app=gcp_ddns___app._src_dir ~ '/' ~ gcp_ddns_srv_version,
+        _src_build=(
+          gcp_ddns___app._src_dir ~ '/' ~ gcp_ddns_srv_version ~ '/src/app'
+        ),
+        _src_bin=(
+          gcp_ddns___app._src_dir ~ '/' ~ gcp_ddns_srv_version ~ '/gcp_ddns'
+        ),
+      ) }}"
+
+- name: 'Prep | assert | backup enabled and location defined'
+  when: gcp_ddns__cfg._mode == 'service'
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - gcp_ddns__cfg._service_urls | length > 0
+    fail_msg: |
+
+      ✘ Must define service URLs when using 'service'.
+
+      gcp_ddns_cfg_mode: {{ gcp_ddns__cfg._mode }}
+      gcp_ddns_cfg_service_urls: {{ gcp_ddns__cfg._service_urls }}
+
+- name: 'Prep | assert | Required options'
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - gcp_ddns__cfg._dns_names | length > 0
+      - gcp_ddns__cfg._google_project | length > 0
+      - gcp_ddns__srv._keys | length > 0
+    fail_msg: |
+
+      ✘ Required options are not set.
+
+      gcp_ddns_cfg_dns_names: {{ gcp_ddns__cfg._dns_names }}
+      gcp_ddns_cfg_google_project: {{ gcp_ddns__cfg._google_project }}
+      gcp_ddns_srv_keys: {{ gcp_ddns__srv._keys }}
+
+- name: '{{ "Prep | account | query user " ~ gcp_ddns__srv._user }}'
+  ansible.builtin.command: '{{ "id " ~ gcp_ddns__srv._user }}'
+  failed_when: false
+  register: gcp_ddns__cfg_check
+  changed_when: gcp_ddns__cfg_check.rc > 0
+
+- name: '{{ "Prep | account | query group " ~ gcp_ddns__srv._group }}'
+  ansible.builtin.command: '{{ "groups " ~ gcp_ddns__srv._group }}'
+  failed_when: false
+  register: gcp_ddns__group_check
+  changed_when: gcp_ddns__group_check.rc > 0
+
+- name: '{{ "Prep | account | create group " ~ gcp_ddns__srv._group }}'
+  when: gcp_ddns__group_check.rc != 0
+  ansible.builtin.group:
+    gid: '{{ gcp_ddns___group.gid }}'
+    name: '{{ gcp_ddns___group.name }}'
+    state: 'present'
+
+- name: '{{ "Prep | account | create user " ~ gcp_ddns__srv._user }}'
+  when: gcp_ddns__cfg_check.rc != 0
   ansible.builtin.user:
-    name: '{{ _gcp_ddns_srv_user.raw }}'
+    name: '{{ gcp_ddns___user.name }}'
+    group: '{{ gcp_ddns___user.group }}'
+    uid: '{{ gcp_ddns___user.uid }}'
+    shell: '{{ gcp_ddns___user.shell }}'
+    home: '{{ gcp_ddns___user.home }}'
+    create_home: '{{ gcp_ddns___user.create_home }}'
+    password: '{{ gcp_ddns___user.password }}'
+    password_lock: '{{ gcp_ddns___user.password_lock }}'
+    update_password: '{{ gcp_ddns___user.update_password }}'
+    expires: '{{ gcp_ddns___user.expires }}'
+    system: '{{ gcp_ddns___user.system }}'
+
+# Pre-existing users may have a different UID/GID/Home.
+- name: '{{ "Prep | account | enumerate " ~ gcp_ddns__srv._user }}'
+  ansible.builtin.user:
+    name: '{{ gcp_ddns__srv._user }}'
   check_mode: true
   changed_when: false
-  register: _gcp_ddns_srv_user_query
+  register: gcp_ddns__cfg_query
 
-- name: 'Prep | parse system user UID/GID'
+- name: 'Prep | fact | parse service UID/GID'
   ansible.builtin.set_fact:
-    _gcp_ddns_srv_user: '{{
-        _gcp_ddns_srv_user |
-        combine({"_uid": _gcp_ddns_srv_user_query.uid})
-      }}'
-    _gcp_ddns_srv_group: '{{
-        _gcp_ddns_srv_group |
-        combine({"_gid": _gcp_ddns_srv_user_query.group})
-      }}'
+    gcp_ddns__cfg: "{{ gcp_ddns__cfg | r_pufky.data.v3(
 
-- name: 'Prep | manage install directory'
-  ansible.builtin.file:
-    path: '{{ _gcp_ddns_srv_version._src | dirname }}'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-    state: 'directory'
+        _uid=gcp_ddns__cfg_query.uid,
+        _gid=gcp_ddns__cfg_query.group,
+      ) }}"
+
+- name: 'Prep | systemd | stop gcp_ddns.service'
+  ansible.builtin.systemd:
+    name: 'gcp_ddns.service'
+    state: 'stopped'
+  failed_when: false

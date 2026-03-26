@@ -1,10 +1,35 @@
 ---
 ###############################################################################
-# GCP Dynamic DNS Service Configuration
+# Feature Flags
 ###############################################################################
-# Install size: ~132MB
-#     golang: ~112MB.
-#   gcp_ddns: ~20MB.
+
+# 1. Run maintenance tasks?
+#
+# Preform role maintenance tasks including removal of old role versions.
+#
+# Default: True.
+gcp_ddns_flg_maintenance: true
+
+# 2. Install application?
+#
+# Creates required default directories, users, install packages, download
+# software, builds binaries, update and start services.
+#
+# Default: True.
+gcp_ddns_flg_install: true
+
+# 3. Set configuration data?
+#
+# Overwrite service DNS keys from gcp_ddns_srv_keys and configures service
+# using gcp_ddns__cfg_*. Stops service, deploys user config data, updates and
+# starts services.
+#
+# Default: False.
+gcp_ddns_flg_config: true
+
+###############################################################################
+# Service
+###############################################################################
 
 # GCP Dynamic DNS Release.
 #
@@ -12,13 +37,7 @@
 #       MAJOR: Safe - Usually requires no role updates.
 #       MINOR: Safe - Usually requires no role updates.
 #       PATCH: Safe - Usually requires no role updates.
-#   RECOMMEND: Always check release notes when upgrading versions - most
-#              version changes require manual migration of data store. Never
-#              use 'latest'.
-#
-# Values:
-#   {VERSION}: Tagged release to use ('v1.5').
-#      latest: Use latest stable release.
+#   RECOMMEND: Always check release notes when upgrading versions.
 #
 # Default: 'v1.5'.
 #
@@ -26,31 +45,108 @@
 # * https://github.com/luontola/gcp-dynamic-dns/releases
 gcp_ddns_srv_version: 'v1.5'
 
-# Halt role if specified version != role version? Default: True.
-gcp_ddns_srv_version_fatal_enable: true
-
-
-###############################################################################
-# Mox User
-###############################################################################
-
-# User that Mox will run under.
+# User that GCP DDNS will run under.
 #
-# Enable gcp_ddns_srv_create_user if account is not externally managed.
+# 'gcp_ddns' will automatically be created using vars/main.yml if required.
+# All other accounts are checked for existence.
 #
 # Default: 'gcp_ddns'.
 gcp_ddns_srv_user: 'gcp_ddns'
 
-# Group that Mox will run under.
+# Group that GCP DDNS will run under.
 #
-# Enable gcp_ddns_srv_create_user if group is not externally managed.
+# 'gcp_ddns' will automatically be created using vars/main.yml if required.
+# All other accounts are checked for existence.
 #
 # Default: 'gcp_ddns'.
 gcp_ddns_srv_group: 'gcp_ddns'
 
-# Create gcp_ddns_srv_user, gcp_ddns_srv_group if not detected?
+# GCP Service Account Credential keys (JSON).
 #
-# Applied via r_pufky.deb.users, see vars/main.yml for default user attributes.
+# Requires a Service Account with DNS Administrator role.
 #
-# Default: True.
-gcp_ddns_srv_create_user: true
+# 1. Create Service Account
+#    console.cloud.google.com:
+#    * IAM & admin ➔ Service accounts ➔ Create Service Account
+#      * Name: dns-updater
+#      * Service account ID: {GENERATE ID}
+#      * Description: Dynamic DNS updater.
+#      * Permissions: DNS Administrator
+#      * Principals with access: {SKIP}
+#
+# 2. Generate Keys
+#    console.cloud.google.com:
+#    * Service accounts ➔ Dynamic DNS Updater ➔ ⋮ ➔ Manage Keys ➔ Add key
+#      * Key type: JSON
+#
+# 3. ansible-vault encrypt service_account.json
+#
+# Sourced from ansible controller; automatically decrypted and placed in
+# /var/opt/gcp_ddns/dns.keys with correct permissions.
+#
+# gcp_ddns_srv_keys: 'host_vars/dynamic.example.com/data/service_account.json'
+#
+# Default: ''.
+gcp_ddns_srv_keys: ''
+
+###############################################################################
+# Config
+###############################################################################
+
+
+# Mode to determine public IP address.
+#
+# IP is checked every 5 minutes.
+#
+# Values:
+#     service: 3rd party web service for external IP address. See
+#              gcp_ddns_cfg_service_urls.
+#   interface: OS for IP address assigned to network interface.
+#        upnp: UPnP queries router for external IP.
+#
+# Default: 'service'.
+gcp_ddns_cfg_mode: 'service'
+
+# Web addresses of services which report your public IP address.
+#
+# Multiple services used in a round-robin fashion. using more than once service
+# results in (5 * # of services) intervals for checks on any specific service.
+#
+# Default:
+#   - 'https://ipv4.icanhazip.com/'
+#   - 'https://checkip.amazonaws.com/'
+#   - 'https://ifconfig.me/ip'
+#   - 'https://ipinfo.io/ip'
+gcp_ddns_cfg_service_urls:
+  - 'https://ipv4.icanhazip.com/'
+  - 'https://checkip.amazonaws.com/'
+  - 'https://ifconfig.me/ip'
+  - 'https://ipinfo.io/ip'
+
+# Network interface to use. Default: '' (auto-detect interface).
+gcp_ddns_cfg_interface_name: ''
+
+# List of domain names to update.
+#
+# Requires gcp_ddns_cfg_google_project set.
+#
+# Special Case:
+# * FQDN REQUIRED (ends in a period).
+# * A type DNS records must already exist on Cloud DNS.
+#
+# gcp_ddns_cfg_dns_names:
+#   - 'example.com.'
+#   - 'subdomain.example.com.'
+#   - 'example.org.'
+#
+# Default: []
+gcp_ddns_cfg_dns_names: []
+
+# GCP project name.
+#
+# Requires gcp_ddns_cfg_dns_names set.
+#
+# gcp_ddns_cfg_google_project: 'your-project-123456'
+#
+# Default: ''.
+gcp_ddns_cfg_google_project: ''
