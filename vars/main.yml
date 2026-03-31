@@ -43,9 +43,9 @@ gcp_ddns___app: "{{ {} | r_pufky.data.v3(
 
     _version=gcp_ddns___release._app,
     _bin='/usr/local/bin/gcp_ddns',
-    _opt_dir='/opt/gcp_ddns',
-    _src_dir='/opt/gcp_ddns/src',
-    _var_dir='/var/opt/gcp_ddns',
+    _opt_d='/opt/gcp_ddns',
+    _src_d='/opt/gcp_ddns/src',
+    _var_d='/var/opt/gcp_ddns',
     _dns_key='/var/opt/gcp_ddns/dns.key',
     _repo_url='https://github.com/luontola/gcp-dynamic-dns',
     _gpg_keys=['56DE80547DD40CB6'],

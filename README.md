@@ -62,6 +62,12 @@ Configure [environment][a].
 molecule test --all
 ```
 
+Testing variables:
+
+  Variable            | type | Description
+ ---------------------|------|-------------
+  molecule_flg_test   | bool | Flag for generic test signal (disables GCP query).
+
 ### [Releases][b]
 
   Release | Debian | Ansible | GCP DDNS | Notes

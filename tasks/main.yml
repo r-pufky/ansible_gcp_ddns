@@ -15,5 +15,5 @@
   ansible.builtin.import_tasks: 'config.yml'
 
 - name: 'Start'
-  when: not (testing_enable | default(false))
+  when: not (molecule_flg_test | default(false))
   ansible.builtin.import_tasks: 'start.yml'

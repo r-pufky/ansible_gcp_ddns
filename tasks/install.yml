@@ -20,8 +20,8 @@
     mode: '0755'
     state: 'directory'
   loop:
-    - '{{ gcp_ddns___app._src_dir }}'  # src_dir includes opt_dir.
-    - '{{ gcp_ddns___app._var_dir }}'
+    - '{{ gcp_ddns___app._src_d }}'  # src_dir includes opt_dir.
+    - '{{ gcp_ddns___app._var_d }}'
 
 - name: 'Install | packages'
   ansible.builtin.include_role:

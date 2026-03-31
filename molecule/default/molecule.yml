@@ -23,7 +23,7 @@ provisioner:
   inventory:
     group_vars:
       all:
-        testing_enable: true
+        molecule_flg_test: true
         gcp_ddns_cfg_dns_names:
           - 'example.com.'
           - 'subdomain.example.com.'
@@ -42,7 +42,6 @@ platforms:
       - 'SYS_ADMIN'  # Required for systemd service.
     command: '/lib/systemd/systemd'
     pre_build_image: true
-
 verifier:
   name: 'ansible'
 scenario:

@@ -6,7 +6,7 @@ After=network-online.target
 [Service]
 Type=simple
 ExecStart={{ gcp_ddns__cfg._bin ~ " sync" }}
-WorkingDirectory={{ gcp_ddns___app._opt_dir }}
+WorkingDirectory={{ gcp_ddns___app._opt_d }}
 Environment="MODE={{ gcp_ddns__cfg._mode }}"
 Environment="SERVICE_URLS={{ gcp_ddns__cfg._service_urls }}"
 Environment="INTERFACE_NAME={{ gcp_ddns__cfg._interface_name }}"
