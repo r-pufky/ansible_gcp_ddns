@@ -33,7 +33,7 @@
 
 - name: 'Install | filesystem | query binary'
   ansible.builtin.stat:
-    path: '{{ gcp_ddns__cfg._app }}'
+    path: '{{ gcp_ddns__cfg._app_d }}'
   register: gcp_ddns__install
 
 - name: 'Install | build | 🗘 GCP DDNS (~1 minute) 🗘'
@@ -46,7 +46,7 @@
   ansible.builtin.git:
     repo: '{{ gcp_ddns__cfg._repo_url }}'
     version: '{{ gcp_ddns__cfg._version }}'
-    dest: '{{ gcp_ddns__cfg._app }}'
+    dest: '{{ gcp_ddns__cfg._app_d }}'
     gpg_allowlist: '{{ gcp_ddns__cfg._gpg_keys }}'
     verify_commit: false
     clone: true
@@ -67,7 +67,7 @@
 - name: 'Install | filesystem | link binary'
   when: not gcp_ddns__install.stat.exists
   ansible.builtin.file:
-    path: '{{ gcp_ddns__cfg._bin }}'
+    path: '{{ gcp_ddns___app._bin }}'
     src: '{{ gcp_ddns__cfg._src_bin }}'
     owner: 'root'
     group: 'root'

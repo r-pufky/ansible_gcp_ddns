@@ -30,7 +30,7 @@
         _interface_name=gcp_ddns_cfg_interface_name,
         _dns_names=gcp_ddns_cfg_dns_names | join(' '),
         _google_project=gcp_ddns_cfg_google_project,
-        _app=gcp_ddns___app._src_d ~ '/' ~ gcp_ddns_srv_version,
+        _app_d=gcp_ddns___app._src_d ~ '/' ~ gcp_ddns_srv_version,
         _src_build=(
           gcp_ddns___app._src_d ~ '/' ~ gcp_ddns_srv_version ~ '/src/app'
         ),

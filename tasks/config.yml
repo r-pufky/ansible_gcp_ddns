@@ -4,19 +4,19 @@
 ###############################################################################
 # The service is configured via environment variables in service definition.
 
-- name: '{{ "Config | filesystem | set " ~ gcp_ddns__cfg._dns_key }}'
+- name: '{{ "Config | filesystem | set " ~ gcp_ddns___app._dns_key }}'
   ansible.builtin.copy:
     src: '{{ gcp_ddns__srv._keys }}'
-    dest: '{{ gcp_ddns__cfg._dns_key }}'
+    dest: '{{ gcp_ddns___app._dns_key }}'
     owner: '{{ gcp_ddns__srv._user }}'
     group: '{{ gcp_ddns__srv._group }}'
     mode: '0640'
     directory_mode: '0755'
 
-- name: '{{ "Config | filesystem | set " ~ gcp_ddns__cfg._service }}'
+- name: '{{ "Config | filesystem | set " ~ gcp_ddns___app._service }}'
   ansible.builtin.template:
     src: 'systemd/gcp_ddns.service.j2'
-    dest: '{{ gcp_ddns__cfg._service }}'
+    dest: '{{ gcp_ddns___app._service }}'
     owner: 'root'
     group: 'root'
     mode: '0644'

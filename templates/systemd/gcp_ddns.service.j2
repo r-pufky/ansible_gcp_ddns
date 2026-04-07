@@ -5,14 +5,14 @@ After=network-online.target
 
 [Service]
 Type=simple
-ExecStart={{ gcp_ddns__cfg._bin ~ " sync" }}
+ExecStart={{ gcp_ddns___app._bin ~ " sync" }}
 WorkingDirectory={{ gcp_ddns___app._opt_d }}
 Environment="MODE={{ gcp_ddns__cfg._mode }}"
 Environment="SERVICE_URLS={{ gcp_ddns__cfg._service_urls }}"
 Environment="INTERFACE_NAME={{ gcp_ddns__cfg._interface_name }}"
 Environment="DNS_NAMES={{ gcp_ddns__cfg._dns_names }}"
 Environment="GOOGLE_PROJECT={{ gcp_ddns__cfg._google_project }}"
-Environment="GOOGLE_APPLICATION_CREDENTIALS={{ gcp_ddns__cfg._dns_key }}"
+Environment="GOOGLE_APPLICATION_CREDENTIALS={{ gcp_ddns___app._dns_key }}"
 RestartSec=5s
 Restart=always
 User={{ gcp_ddns__srv._user }}
