@@ -4,14 +4,6 @@
 ###############################################################################
 # Only use data annotations in role after merging role, defaults, runtime data.
 # Service may not exist if first install.
-#
-# *arr services use the same codebase; any bugs or fixes should be checked for
-# all related services.
-
-#         _config=gcp_ddns___dir ~ '/dns.key',
-#         _src=gcp_ddns___dir ~ '/' ~ gcp_ddns_srv_version,
-#         _src_build=gcp_ddns___dir ~ '/' ~ gcp_ddns_srv_version ~ '/src/app',
-#         _src_bin=gcp_ddns___dir ~ '/' ~ gcp_ddns_srv_version ~ '/gcp_ddns',
 
 - name: 'Prep | fact | record start time'
   ansible.builtin.set_fact:

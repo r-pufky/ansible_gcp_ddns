@@ -2,6 +2,11 @@
 ###############################################################################
 # Start
 ###############################################################################
+# Initial service start may take >1 minute if a DNS update is required as the
+# update is sent and verified via DNS during the sync command. Instead check to
+# ensure service is activating or activated, and that it hasn't immediately
+# failed due to bad configuration.
+#
 # Start services and confirm they are active and running.
 
 - name: 'Start | systemd | gcp_ddns.service'
@@ -13,7 +18,7 @@
   delay: 15
   retries: 3
   register: gcp_ddns__service
-  until: gcp_ddns__service.status.ActiveState == 'active'
+  until: gcp_ddns__service.status.ActiveState in ['activating', 'active']
 
 - name: 'Start | fact | query services'
   ansible.builtin.service_facts:
@@ -21,7 +26,7 @@
 - name: 'Start | assert | services running'
   ansible.builtin.assert:
     quiet: true
-    that: ansible_facts.services[item].state == 'running'
+    that: ansible_facts.services[item].state != 'failed'
     fail_msg: |
 
       ✘ Service failed to start.
