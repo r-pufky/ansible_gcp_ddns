@@ -44,10 +44,10 @@
 - name: 'Install | git | clone gcp-dynamic-dns'
   when: not gcp_ddns__install.stat.exists
   ansible.builtin.git:
-    repo: '{{ gcp_ddns__cfg._repo_url }}'
+    repo: '{{ gcp_ddns___app._repo_url }}'
     version: '{{ gcp_ddns__cfg._version }}'
     dest: '{{ gcp_ddns__cfg._app_d }}'
-    gpg_allowlist: '{{ gcp_ddns__cfg._gpg_keys }}'
+    gpg_allowlist: '{{ gcp_ddns___app._gpg_keys }}'
     verify_commit: false
     clone: true
   register: gcp_ddns__download

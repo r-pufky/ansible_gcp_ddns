@@ -14,7 +14,7 @@
         _group=gcp_ddns_srv_group,
         _keys=gcp_ddns_srv_keys,
       ) }}"
-    gcp_ddns__cfg: "{{ gcp_ddns___app | r_pufky.data.v3(
+    gcp_ddns__cfg: "{{ {} | r_pufky.data.v3(
 
         _version=gcp_ddns_srv_version,
         _mode=gcp_ddns_cfg_mode | lower,
